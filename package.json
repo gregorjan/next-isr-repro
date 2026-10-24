@@ -14,7 +14,7 @@
     "trace": "bun run tools/trace.ts"
   },
   "dependencies": {
-    "next": "16.2.9",
+    "next": "15.5.28",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   }

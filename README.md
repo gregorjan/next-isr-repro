@@ -1,6 +1,8 @@
 # Minimal Next.js ISR reproduction
 
-Stock Next.js 16.2.9, React 19.2.3 and Node.js 22.23.2. No dependency patches, CMS, middleware, fonts, styling, authentication or application libraries.
+Stock Next.js 15.5.28, React 19.2.3 and Node.js 22.23.2. No dependency patches, CMS, middleware, fonts, styling, authentication or application libraries.
+
+This branch tests the latest stable Next.js 15 release available when the comparison started. Only the Next.js version and lockfile differ from the App Router baseline; fixed content, two-second ISR and default ETag behavior are retained.
 
 ## Baseline
 
@@ -36,7 +38,7 @@ The client requests HTML, full RSC and mock JSON, waits for natural ISR expiry, 
 
 If the executable named `node` is not Node.js 22, set `REPRO_NODE` to the desired Node executable when running the trace. The observed Node version is included in the result.
 
-### Established baseline behavior
+### Established baseline behavior (Next.js 16.2.9)
 
 On the fixed page, cached HTML reaches the sender as a string with `RenderResult.isDynamic === false`. Cached RSC reaches it as a Buffer with `RenderResult.isDynamic === true`. The RSC Buffer is already present at the input to `fromStatic`; that method is not converting an HTML string into a Buffer.
 
