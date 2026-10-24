@@ -17,5 +17,10 @@
     "next": "16.5.0-canary.26",
     "react": "19.2.3",
     "react-dom": "19.2.3"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "next@16.5.0-canary.26": "patches/next@16.5.0-canary.26.patch"
+    }
   }
 }
