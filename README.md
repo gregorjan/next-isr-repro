@@ -2,7 +2,7 @@
 
 Stock Next.js 15.5.28, React 19.2.3 and Node.js 22.23.2. No dependency patches, CMS, middleware, fonts, styling, authentication or application libraries.
 
-This branch tests the latest stable Next.js 15 release available when the comparison started. Only the Next.js version and lockfile differ from the App Router baseline; fixed content, two-second ISR and default ETag behavior are retained.
+This branch tests the latest stable Next.js 15 release available when the comparison started using the Pages Router. The fixed page moves to `pages/index.jsx` and uses `getStaticProps` with `revalidate: 2`; content and default ETag behavior are retained. The local debugger client targets the App Router baseline, not this Pages Router control.
 
 ## Baseline
 
