@@ -4,7 +4,7 @@ Diagnostic-only Next.js 16.5.0-canary.26 with the Buffer/ETag dependency patch, 
 
 This branch intentionally applies the earlier Buffer/ETag experiment to the latest canary. Both stock sender variants reuse an already-existing Buffer as the payload and hash its Latin-1 representation for the ETag; response bytes and genuine stream handling are unchanged. This also enables the sender's existing Content-Length and conditional-response paths for buffered payloads. Content, two-second ISR and the default `generateEtags` setting remain unchanged.
 
-This is a diagnostic control, not a proposed dependency-patched application fix. The unpatched canary remains on `bugfix/repro-canary-app`; the recorded stock comparisons below do not describe this patched branch.
+This is a diagnostic control, not a proposed dependency-patched application fix. This Pages Router control moves the fixed page to `pages/index.jsx` and uses `getStaticProps` with `revalidate: 2`; the debugger client targets the App Router baseline. The unpatched Pages Router canary remains on `bugfix/repro-canary-pages`; the recorded stock comparisons below do not describe this patched branch.
 
 ## Baseline
 
