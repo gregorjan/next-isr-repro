@@ -2,7 +2,7 @@
 
 Stock Next.js 16.5.0-canary.26, React 19.2.3 and Node.js 22.23.2. No dependency patches, CMS, middleware, fonts, styling, authentication or application libraries.
 
-This canary control changes only Next.js and its lockfile from `bugfix/isr-repro`. React, content, two-second ISR expiry and default ETag behavior remain unchanged. The recorded 16.2.9 comparison below describes the stable baseline, not a canary result.
+This is the Pages Router control for Next.js 16.5.0-canary.26. Compare with `bugfix/repro-canary-app`: only the router changes, while Next.js, React, content, two-second ISR expiry and default ETag behavior remain identical. The recorded 16.2.9 comparison below describes the stable baseline, not a canary result. The local debugger trace targets the App Router baseline, not this Pages Router control.
 
 ## Baseline
 
