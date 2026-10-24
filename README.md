@@ -1,6 +1,8 @@
 # Minimal Next.js ISR reproduction
 
-Stock Next.js 16.2.9, React 19.2.3 and Node.js 22.23.2. No dependency patches, CMS, middleware, fonts, styling, authentication or application libraries.
+Stock Next.js 16.5.0-canary.26, React 19.2.3 and Node.js 22.23.2. No dependency patches, CMS, middleware, fonts, styling, authentication or application libraries.
+
+This canary control changes only Next.js and its lockfile from `bugfix/isr-repro`. React, content, two-second ISR expiry and default ETag behavior remain unchanged. The recorded 16.2.9 comparison below describes the stable baseline, not a canary result.
 
 ## Baseline
 

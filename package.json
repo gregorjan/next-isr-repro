@@ -14,7 +14,7 @@
     "trace": "bun run tools/trace.ts"
   },
   "dependencies": {
-    "next": "16.2.9",
+    "next": "16.5.0-canary.26",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   }
