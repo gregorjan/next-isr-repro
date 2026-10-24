@@ -56,6 +56,23 @@ The page tests issue HTML requests only; neither page fetches an API. Separate a
 
 These controls reproduce writes associated with page-data outputs without application features. They do not establish the private persistence implementation or prove that `RenderResult.isDynamic` causes the writes. The Usage dashboard is available on the Hobby plan; the separate `vercel metrics` query requires paid Observability Plus and was not enabled. The separate ETag-disabled experiment is excluded from this comparison.
 
+### Latest-canary comparison: Next.js 16.5.0-canary.26
+
+The npm `canary` tag resolved to **16.5.0-canary.26** when this comparison started. The same controls retain React 19.2.3, Node.js 22.23.2, fixed content, two-second natural ISR expiry and default ETags. Each measured case had exactly one additional function invocation, `STALE` followed by `HIT`, and unchanged captured response SHA-256 and ETag.
+
+| Control | Branch | ISR writes before → after | Function invocations before → after | Additional write units |
+| --- | --- | --- | --- | --- |
+| Fixed JSON API | `bugfix/repro-canary-app` | 82 → 82 | 25 → 26 | **0** |
+| Pages Router static page | `bugfix/repro-canary-pages` | 82 → 82 | 26 → 27 | **0** |
+| App Router static page | `bugfix/repro-canary-app` | 82 → 86 | 27 → 28 | **4** |
+
+| Next.js version | API | Pages Router | App Router |
+| --- | --- | --- | --- |
+| 16.2.9 | +0 | +1 | +6 |
+| 16.5.0-canary.26 | +0 | +0 | +4 |
+
+Values are additional ISR write units for the isolated measured regeneration, not total requests or artifact counts. Canary eliminates the extra Pages Router write in this minimal case. App Router still incurs writes; its smaller count does not establish unchanged-content deduplication or explain the private persistence mechanism. No dependency patch is used in either version.
+
 ## Incremental experiments
 
 Keep the baseline commit. Add exactly one mocked behavior per commit and rerun the same URL and trace: asynchronous data, asynchronous sibling components, null-returning components, a mocked component map, then dynamic routing. Keep mock responses fixed so output changes can be separated from scheduling changes. Do not import real application code or add dependency patches.
