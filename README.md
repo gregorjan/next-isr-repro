@@ -42,6 +42,12 @@ On the fixed page, cached HTML reaches the sender as a string with `RenderResult
 
 This behavior occurs before mocked data is connected. `RenderResult.isDynamic` describes an internal response representation, not whether the route is ISR-cacheable. These observations do not establish the cause of Vercel ISR write charges.
 
+### Hosted HTML-only check
+
+An HTML-only visit to the unchanged static page reproduced ISR writes on Vercel. The page returned `STALE`, then `HIT` after regeneration, with identical HTML SHA-256 and ETag. The project's Usage dashboard increased from 13 to 19 ISR write units and from two to three function invocations. The test made no explicit RSC or mock-API requests; the page itself fetches no data.
+
+This demonstrates writes associated with regenerating unchanged captured HTML in the bare application. It does not prove that every internal artifact or header is unchanged, or that `RenderResult.isDynamic` causes the writes. The Usage dashboard is available on the Hobby plan; the separate `vercel metrics` query requires paid Observability Plus and was not enabled.
+
 ## Incremental experiments
 
 Keep the baseline commit. Add exactly one mocked behavior per commit and rerun the same URL and trace: asynchronous data, asynchronous sibling components, null-returning components, a mocked component map, then dynamic routing. Keep mock responses fixed so output changes can be separated from scheduling changes. Do not import real application code or add dependency patches.
