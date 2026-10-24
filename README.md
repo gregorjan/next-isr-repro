@@ -42,11 +42,19 @@ On the fixed page, cached HTML reaches the sender as a string with `RenderResult
 
 This behavior occurs before mocked data is connected. `RenderResult.isDynamic` describes an internal response representation, not whether the route is ISR-cacheable. These observations do not establish the cause of Vercel ISR write charges.
 
-### Hosted HTML-only check
+### Vercel comparison: Next.js 16.2.9, default settings
 
-An HTML-only visit to the unchanged static page reproduced ISR writes on Vercel. The page returned `STALE`, then `HIT` after regeneration, with identical HTML SHA-256 and ETag. The project's Usage dashboard increased from 13 to 19 ISR write units and from two to three function invocations. The test made no explicit RSC or mock-API requests; the page itself fetches no data.
+All controls use default ETag behavior, React 19.2.3, Node.js 22.23.2 and two-second natural ISR expiry. No dependency patches or framework configuration overrides are present. Each measured request returned `STALE`, then settled to `HIT`; response SHA-256 and ETag stayed identical. Cases were measured sequentially against the isolated project's Usage dashboard after warming and allowing usage ingestion to settle.
 
-This demonstrates writes associated with regenerating unchanged captured HTML in the bare application. It does not prove that every internal artifact or header is unchanged, or that `RenderResult.isDynamic` causes the writes. The Usage dashboard is available on the Hobby plan; the separate `vercel metrics` query requires paid Observability Plus and was not enabled.
+| Control | Branch | ISR writes before → after | Function invocations before → after | Additional write units |
+| --- | --- | --- | --- | --- |
+| Fixed JSON API | `bugfix/isr-repro` | 64 → 64 | 17 → 18 | **0** |
+| Pages Router static page | `bugfix/repro-pages-router` | 64 → 65 | 18 → 19 | **1** |
+| App Router static page | `bugfix/isr-repro` | 65 → 71 | 19 → 20 | **6** |
+
+The page tests issue HTML requests only; neither page fetches an API. Separate artifact inspection found identical payloads for App Router HTML, full RSC and all five advertised segments (`/_tree`, `/_full`, `/__PAGE__`, `/_index`, `/_head`) across regeneration. Only visible `Date`, `Age` and request-ID headers differed. The Pages Router's 31-byte data JSON was also sampled unchanged, without an ETag. The fixed JSON API has an ETag and incurred no additional write units even though its `Date` header changed.
+
+These controls reproduce writes associated with page-data outputs without application features. They do not establish the private persistence implementation or prove that `RenderResult.isDynamic` causes the writes. The Usage dashboard is available on the Hobby plan; the separate `vercel metrics` query requires paid Observability Plus and was not enabled. The separate ETag-disabled experiment is excluded from this comparison.
 
 ## Incremental experiments
 
