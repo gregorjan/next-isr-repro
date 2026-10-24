@@ -1,0 +1,21 @@
+{
+  "name": "next-isr-repro",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.0.0",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1 --port 3199",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1 --port 3199",
+    "trace": "bun run tools/trace.ts"
+  },
+  "dependencies": {
+    "next": "16.2.9",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  }
+}
