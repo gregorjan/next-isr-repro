@@ -1,4 +1,6 @@
-export const revalidate = 2
+export async function getStaticProps() {
+  return { props: {}, revalidate: 2 }
+}
 
 export default function Page() {
   return (

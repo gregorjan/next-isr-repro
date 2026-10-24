@@ -1,5 +1,7 @@
 # Minimal Next.js ISR reproduction
 
+This control branch serves `/` through the Pages Router with `getStaticProps` and the same two-second ISR lifetime. Compare with the App Router baseline on `bugfix/isr-repro`. The debugger trace targets the App Router baseline, not this Pages Router control.
+
 Stock Next.js 16.2.9, React 19.2.3 and Node.js 22.23.2. No dependency patches, CMS, middleware, fonts, styling, authentication or application libraries.
 
 ## Baseline
