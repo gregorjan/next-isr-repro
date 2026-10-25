@@ -1,6 +1,12 @@
 # Minimal Next.js ISR reproduction
 
-Stock Next.js 16.2.9, React 19.2.3 and Node.js 22.23.2. No dependency patches, CMS, middleware, fonts, styling, authentication or application libraries.
+Diagnostic-only Next.js 16.2.9 with the Buffer/ETag dependency patch, React 19.2.3 and Node.js 22.23.2. No CMS, middleware, fonts, styling, authentication or application libraries.
+
+This branch applies the Buffer/ETag experiment from `bugfix/repro-canary-buffer-app` to the GROHE Next.js version. The patch file is byte-identical to the canary patch because both sender files are unchanged between 16.2.9 and 16.5.0-canary.26. Both sender variants reuse an already-existing Buffer as the payload and hash its Latin-1 representation for the ETag; response bytes and genuine stream handling are unchanged. Content, two-second ISR and the default `generateEtags` setting remain unchanged.
+
+This is a diagnostic control, not a proposed dependency-patched application fix. The unpatched 16.2.9 baseline remains on `bugfix/isr-repro`; the recorded stock comparisons below do not describe this patched branch. `pnpm trace` refuses patched Next.js builds by design.
+
+Local `next start` comparison with `bugfix/isr-repro`, three natural expiries each: the build bundles the patched ESM sender into the App page chunk (the stock build bundles the stock sender). Stock serves cached RSC (2962 bytes) chunked, without ETag or Content-Length; the patched build serves the same bytes with an ETag and Content-Length and answers a matching `If-None-Match` with `304`. HTML has an ETag and Content-Length in both. HTML and RSC bytes were stable across regenerations in both builds. Whether this response-side difference affects Vercel write metering has to be measured on Vercel.
 
 ## Baseline
 
@@ -30,13 +36,13 @@ Stop any manually started server before running:
 pnpm trace
 ```
 
-`tools/trace.ts` starts the production server with Node's debugger bound to an ephemeral loopback port. It places debugger breakpoints in the compiled stock sender and on the actual `RenderResult.fromStatic` methods. It reads arguments and response types; it does not edit dependencies, replace functions or change response bytes.
+`tools/trace.ts` starts the production server with Node's debugger bound to an ephemeral loopback port. It places debugger breakpoints in the compiled sender and on the actual `RenderResult.fromStatic` methods. It reads arguments and response types; it does not edit dependencies, replace functions or change response bytes.
 
 The client requests HTML, full RSC and mock JSON, waits for natural ISR expiry, then requests the regenerated output. It records factory inputs, sender inputs, cache headers, ETags and response hashes. Evidence is written to a temporary directory outside the repository. The server is stopped and port 3199 released afterwards.
 
 If the executable named `node` is not Node.js 22, set `REPRO_NODE` to the desired Node executable when running the trace. The observed Node version is included in the result.
 
-### Established baseline behavior
+### Established baseline behavior (stock Next.js 16.2.9)
 
 On the fixed page, cached HTML reaches the sender as a string with `RenderResult.isDynamic === false`. Cached RSC reaches it as a Buffer with `RenderResult.isDynamic === true`. The RSC Buffer is already present at the input to `fromStatic`; that method is not converting an HTML string into a Buffer.
 

@@ -1,0 +1,32 @@
+diff --git a/dist/esm/server/send-payload.js b/dist/esm/server/send-payload.js
+index 864dab61e0a6890c54a6bf025e61e9647e60369e..c053be18dfe0ad7219bf0094d3732af70a57c272 100644
+--- a/dist/esm/server/send-payload.js
++++ b/dist/esm/server/send-payload.js
+@@ -33,9 +33,9 @@ export async function sendRenderResult({ req, res, result, generateEtags, powere
+     if (cacheControl && !res.getHeader('Cache-Control')) {
+         res.setHeader('Cache-Control', getCacheControlHeader(cacheControl));
+     }
+-    const payload = result.isDynamic ? null : result.toUnchunkedString();
++    const payload = Buffer.isBuffer(result.response) ? result.response : result.isDynamic ? null : result.toUnchunkedString();
+     if (generateEtags && payload !== null) {
+-        const etag = generateETag(payload);
++        const etag = generateETag(Buffer.isBuffer(payload) ? payload.toString('latin1') : payload);
+         if (sendEtagResponse(req, res, etag)) {
+             return;
+         }
+diff --git a/dist/server/send-payload.js b/dist/server/send-payload.js
+index dc844c8444ec0d5c78f8721db815fb176bb9eb8d..04cf9134453f65fa5486e176093ffda8c005f7cf 100644
+--- a/dist/server/send-payload.js
++++ b/dist/server/send-payload.js
+@@ -60,9 +60,9 @@ async function sendRenderResult({ req, res, result, generateEtags, poweredByHead
+     if (cacheControl && !res.getHeader('Cache-Control')) {
+         res.setHeader('Cache-Control', (0, _cachecontrol.getCacheControlHeader)(cacheControl));
+     }
+-    const payload = result.isDynamic ? null : result.toUnchunkedString();
++    const payload = Buffer.isBuffer(result.response) ? result.response : result.isDynamic ? null : result.toUnchunkedString();
+     if (generateEtags && payload !== null) {
+-        const etag = (0, _etag.generateETag)(payload);
++        const etag = (0, _etag.generateETag)(Buffer.isBuffer(payload) ? payload.toString('latin1') : payload);
+         if (sendEtagResponse(req, res, etag)) {
+             return;
+         }
