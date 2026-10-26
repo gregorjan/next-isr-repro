@@ -23,6 +23,25 @@ pnpm ondemand <base URL> [rounds=5] [interval seconds=60]
 
 The page does not call either mock API. This is the control before connecting asynchronous data or other mocked application features.
 
+### Vercel comparison: on-demand revalidation, unchanged output
+
+Both branches use `revalidate = false`, default ETags and `pnpm ondemand https://next-isr-repro.vercel.app 5 60`: warm, 60-second cooldown, then five rounds one minute apart, each `POST /api/revalidate?path=/` and `?path=/api/mock/product` followed by HTML, RSC and API requests. Deployed to `next-isr-repro` production through the Vercel API. Write units are read per minute from the project's ISR Usage chart; values marked ≈ are read from bar heights, the others from the chart tooltip.
+
+| Round | Output | 16.2.9 (`bugfix/repro-ondemand-app`, `dpl_8s77UmRKbSkqbyRgNaKf3oMY4dnJ`) | 16.5.0-canary.26 (`bugfix/repro-canary-ondemand-app`, `dpl_5Gvnd9ajTCgWZQWsUaCD5M8VWTw9`) |
+| --- | --- | --- | --- |
+| r1 | Changed: the first runtime render differs from the build prerender (+5 / +4 bytes) | ≈14 | 10 |
+| r2 | Identical to r1 | ≈12 | **8** |
+| r3 | Identical | ≈24 (page regenerated twice) | 8 |
+| r4 | Identical | **12** | 8 |
+| r5 | Identical | ≈24 (page regenerated twice) | **8** |
+| Total | | 86 | 42 |
+
+Rounds (UTC, 2026-10-26): 16.2.9 at 13:50:42, 13:51:46, 13:52:50, 13:53:54 and 13:54:58; canary at 14:37:16, 14:38:20, 14:39:24, 14:40:28 and 14:41:32. In rounds 2–5 the HTML and RSC SHA-256 and the HTML ETag were identical to round 1 every time.
+
+On both versions, after every unchanged revalidation, the HTML response carried an ETag and kept its `Age` (about 63 seconds), while the RSC response had no ETag and its `Age` reset to 0. The mock API's `REVALIDATED` response had no ETag either; its `HIT` responses did. The ISR overview reported 0 time-based and 0 tag revalidations for these `revalidatePath` runs.
+
+On-demand revalidation does not avoid the writes: unchanged output still costs about 12 write units per round on 16.2.9 and 8 on canary. This matches the ratio of the time-based App Router results (+6 and +4). The header pattern is consistent with the cached RSC being rewritten, but the Usage chart does not split write units by output, so it does not prove which outputs are charged.
+
 ## Run
 
 Use Node.js 22 and pnpm 10. Bun is required only for the local debugger client.
