@@ -13,6 +13,14 @@ This on-demand control matches GROHE production: `revalidate = false` and regene
 
 Local `next start` check, two rounds: after `POST /api/revalidate?path=/` the next HTML request is `MISS` (`revalidatePath` expires immediately), then `HIT`. HTML, RSC and API bytes and the HTML ETag were identical across both regenerations. Cached RSC and the API JSON are sent chunked without an ETag, as on the time-based baseline. Measure on Vercel as one confirmed `POST` → `MISS` → `HIT`, after warming.
 
+### On-demand check
+
+```sh
+pnpm ondemand <base URL> [rounds=5] [interval seconds=60]
+```
+
+`tools/ondemand.ts` warms HTML, RSC and the mock product JSON, waits one interval, then per round samples all three, revalidates `/` and `/api/mock/product`, and samples twice more. Each line records a timestamp, `x-vercel-cache`/`x-nextjs-cache`, `Age`, ETag, Content-Length, body length and SHA-256, and whether the body and ETag match the warm reference. The timestamps align rounds with the Usage dashboard.
+
 The page does not call either mock API. This is the control before connecting asynchronous data or other mocked application features.
 
 ## Run

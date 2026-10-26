@@ -11,7 +11,8 @@
     "dev": "next dev --hostname 127.0.0.1 --port 3199",
     "build": "next build",
     "start": "next start --hostname 127.0.0.1 --port 3199",
-    "trace": "bun run tools/trace.ts"
+    "trace": "bun run tools/trace.ts",
+    "ondemand": "bun run tools/ondemand.ts"
   },
   "dependencies": {
     "next": "16.2.9",
