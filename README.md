@@ -29,10 +29,10 @@ Both branches use `revalidate = false`, default ETags and `pnpm ondemand https:/
 
 | Round | Output | 16.2.9 (`bugfix/repro-ondemand-app`, `dpl_8s77UmRKbSkqbyRgNaKf3oMY4dnJ`) | 16.5.0-canary.26 (`bugfix/repro-canary-ondemand-app`, `dpl_5Gvnd9ajTCgWZQWsUaCD5M8VWTw9`) |
 | --- | --- | --- | --- |
-| r1 | Changed: the first runtime render differs from the build prerender (+5 / +4 bytes) | ≈14 | 10 |
+| r1 | Changed: the first runtime render differs from the build prerender (+5 / +4 bytes) | ≈14 | ≈10 |
 | r2 | Identical to r1 | ≈12 | **8** |
-| r3 | Identical | ≈24 (page regenerated twice) | 8 |
-| r4 | Identical | **12** | 8 |
+| r3 | Identical | ≈24 (page regenerated twice) | ≈8 |
+| r4 | Identical | **12** | ≈8 |
 | r5 | Identical | ≈24 (page regenerated twice) | **8** |
 | Total | | 86 | 42 |
 
