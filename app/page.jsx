@@ -1,4 +1,4 @@
-export const revalidate = 2
+export const revalidate = false
 
 export default function Page() {
   return (

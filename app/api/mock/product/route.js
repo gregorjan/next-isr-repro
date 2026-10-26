@@ -1,5 +1,5 @@
 export const dynamic = 'force-static'
-export const revalidate = 2
+export const revalidate = false
 
 export function GET() {
   return Response.json({

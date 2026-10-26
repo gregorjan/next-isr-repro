@@ -2,11 +2,16 @@
 
 Stock Next.js 16.2.9, React 19.2.3 and Node.js 22.23.2. No dependency patches, CMS, middleware, fonts, styling, authentication or application libraries.
 
+This on-demand control matches GROHE production: `revalidate = false` and regeneration only through `revalidatePath`, the call GROHE's `/api/revalidate` uses for paths. It changes only the revalidation trigger from `bugfix/isr-repro`; content, default ETags (`generateEtags: true`, no `next.config`) and versions are unchanged. The recorded tables below were measured with two-second time-based ISR, not with this branch.
+
 ## Baseline
 
-- `/`: fixed static page with a two-second ISR lifetime.
-- `/api/mock/product`: fixed mock product JSON.
-- `/api/mock/navigation`: fixed mock navigation JSON.
+- `/`: fixed static page, `revalidate = false`.
+- `/api/mock/product`: fixed mock product JSON, `revalidate = false`.
+- `/api/mock/navigation`: fixed mock navigation JSON, `revalidate = false`.
+- `POST /api/revalidate?path=/`: calls `revalidatePath(path)` (defaults to `/`). It has no secret; the deployment URL is the only protection.
+
+Local `next start` check, two rounds: after `POST /api/revalidate?path=/` the next HTML request is `MISS` (`revalidatePath` expires immediately), then `HIT`. HTML, RSC and API bytes and the HTML ETag were identical across both regenerations. Cached RSC and the API JSON are sent chunked without an ETag, as on the time-based baseline. Measure on Vercel as one confirmed `POST` → `MISS` → `HIT`, after warming.
 
 The page does not call either mock API. This is the control before connecting asynchronous data or other mocked application features.
 
