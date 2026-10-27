@@ -1,8 +1,8 @@
 # Minimal Next.js ISR reproduction
 
-Stock Next.js 16.5.0-canary.26 with Cache Components, React 19.2.3 and Node.js 22.23.2. No dependency patches, CMS, middleware, fonts, styling, authentication or application libraries.
+Stock Next.js 16.2.9 with Cache Components, React 19.2.3 and Node.js 22.23.2 — the Next.js version GROHE runs. No dependency patches, CMS, middleware, fonts, styling, authentication or application libraries.
 
-This branch tests Vercel's recommended model on top of `bugfix/repro-canary-ondemand-app`: `cacheComponents: true` and `partialPrefetching: true` (the setting canary recommends for new Cache Components apps). The page renders a `Demo` component with `'use cache'`, `cacheLife('max')` and `cacheTag('demo')`; the mock APIs cache their JSON the same way with the `product` and `navigation` tags. Route segment configs are removed because Cache Components rejects them. Revalidation uses `POST /api/revalidate?tag=<tag>`, which calls `revalidateTag(tag, 'max')` (stale-while-revalidate); `?path=` still calls `revalidatePath`. Content and default ETags are unchanged.
+This branch is `bugfix/repro-canary-usecache-app` with Next.js 16.2.9 and its lockfile; `partialPrefetching` is removed because 16.2.9 has no such option. `cacheComponents: true` is the only config. The page renders a `Demo` component with `'use cache'`, `cacheLife('max')` and `cacheTag('demo')`; the mock APIs cache their JSON the same way with the `product` and `navigation` tags. Route segment configs are removed because Cache Components rejects them. Revalidation uses `POST /api/revalidate?tag=<tag>`, which calls `revalidateTag(tag, 'max')` (stale-while-revalidate); `?path=` still calls `revalidatePath`. Content and default ETags are unchanged. The Vercel result recorded below is the canary run from `bugfix/repro-canary-usecache-app`.
 
 Run the check with tag targets:
 
@@ -12,7 +12,7 @@ pnpm ondemand https://next-isr-repro.vercel.app 5 60 tag:demo,tag:product
 
 Local `next start` check: after `revalidateTag` the next request is `STALE` and the one after is a regenerated `HIT`; the first regeneration differs from the build prerender, later ones are byte-identical. Cached RSC is still sent without an ETag.
 
-### Vercel result: Cache Components with tag revalidation
+### Vercel result: Cache Components with tag revalidation (16.5.0-canary.26)
 
 Deployment `dpl_7NeiXU4AmZUnmaneekN4omb8wtZc` to `next-isr-repro` production; `pnpm ondemand https://next-isr-repro.vercel.app 5 60 tag:demo,tag:product`. Revalidations (UTC, 2026-10-27) at 07:36:47, 07:37:50, 07:38:53, 07:39:56 and 07:40:59. Round 1 changed output (the first runtime render differs from the build prerender: HTML 4996 → 5007 bytes, RSC 2956 → 2967 bytes); rounds 2–5 regenerated the page each time and were byte-identical to round 1.
 

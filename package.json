@@ -15,7 +15,7 @@
     "ondemand": "bun run tools/ondemand.ts"
   },
   "dependencies": {
-    "next": "16.5.0-canary.26",
+    "next": "16.2.9",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   }
