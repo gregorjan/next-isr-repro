@@ -4,6 +4,16 @@ Stock Next.js 16.2.9 with Cache Components, React 19.2.3 and Node.js 22.23.2 —
 
 This branch is `bugfix/repro-canary-usecache-app` with Next.js 16.2.9 and its lockfile; `partialPrefetching` is removed because 16.2.9 has no such option. `cacheComponents: true` is the only config. The page renders a `Demo` component with `'use cache'`, `cacheLife('max')` and `cacheTag('demo')`; the mock APIs cache their JSON the same way with the `product` and `navigation` tags. Route segment configs are removed because Cache Components rejects them. Revalidation uses `POST /api/revalidate?tag=<tag>`, which calls `revalidateTag(tag, 'max')` (stale-while-revalidate); `?path=` still calls `revalidatePath`. Content and default ETags are unchanged. The Vercel result recorded below is the canary run from `bugfix/repro-canary-usecache-app`.
 
+This catch-all variant adds a GROHE-style `app/[locale]/[[...path]]` route. `generateStaticParams` prerenders only `/en` and `/de`; every other path is rendered on its first request. The page awaits `params` and renders a `Catalog` component with `'use cache'`, `cacheLife('max')` and `cacheTag('catalog', 'catalog_<locale>')`. The build reports the route as Partial Prerender (◐).
+
+Local `next start` check: a non-prerendered path such as `/en/some/product` is `MISS` on its first request and `HIT` afterwards; its HTML and segments are written to the cache. A plain `RSC: 1` request for such a path is rendered on every request (`Cache-Control: private, no-cache, no-store`); only generated IDs differ between responses. Real client navigations send additional router headers, so this does not by itself show browser navigation behaviour.
+
+Run the catch-all check with:
+
+```sh
+pnpm ondemand https://next-isr-repro.vercel.app 5 60 tag:catalog_en,tag:catalog_de /en,/en/some/product,/de/produkte/kueche
+```
+
 Run the check with tag targets:
 
 ```sh
