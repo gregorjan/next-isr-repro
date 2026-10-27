@@ -12,6 +12,18 @@ pnpm ondemand https://next-isr-repro.vercel.app 5 60 tag:demo,tag:product
 
 Local `next start` check: after `revalidateTag` the next request is `STALE` and the one after is a regenerated `HIT`; the first regeneration differs from the build prerender, later ones are byte-identical. Cached RSC is still sent without an ETag.
 
+### Vercel result: Cache Components with tag revalidation
+
+Deployment `dpl_7NeiXU4AmZUnmaneekN4omb8wtZc` to `next-isr-repro` production; `pnpm ondemand https://next-isr-repro.vercel.app 5 60 tag:demo,tag:product`. Revalidations (UTC, 2026-10-27) at 07:36:47, 07:37:50, 07:38:53, 07:39:56 and 07:40:59. Round 1 changed output (the first runtime render differs from the build prerender: HTML 4996 → 5007 bytes, RSC 2956 → 2967 bytes); rounds 2–5 regenerated the page each time and were byte-identical to round 1.
+
+| Round | Output | Write units | Read units |
+| --- | --- | --- | --- |
+| r1 | Changed | 10 | 0 |
+| r2–r5 | Identical | 0 | 2–3 per round |
+| Total | | 10 | 20 |
+
+With Cache Components, HTML responses carry no ETag either; only the mock API JSON does. Unchanged regenerations nevertheless incurred no write units, so a missing response ETag does not by itself cause the writes. Compared with `bugfix/repro-canary-ondemand-app` (8 write units per unchanged round), this branch changes Cache Components, `use cache` and the revalidation trigger (`revalidateTag(tag, 'max')` instead of `revalidatePath`) at once; this run does not isolate which of them removes the writes. Single run, four unchanged rounds.
+
 ## Baseline
 
 - `/`: fixed static page, `revalidate = false`.
