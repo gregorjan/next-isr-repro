@@ -14,6 +14,19 @@ Run the catch-all check with:
 pnpm ondemand https://next-isr-repro.vercel.app 5 60 tag:catalog_en,tag:catalog_de /en,/en/some/product,/de/produkte/kueche
 ```
 
+### Vercel result: catch-all route with Cache Components (16.2.9)
+
+Deployment `dpl_6NB9Wkp6C4rcqvgjJ1peWmppTHpD` to `next-isr-repro` production; `pnpm ondemand https://next-isr-repro.vercel.app 5 60 tag:catalog_en,tag:catalog_de /en,/en/some/product,/de/produkte/kueche`. The warm phase (08:31 UTC, 2026-10-27) made the first requests to the non-prerendered `/en/some/product` and `/de/produkte/kueche` (`MISS`, then cached `HIT` for HTML and RSC). Revalidations at 08:32:04, 08:33:08, 08:34:12, 08:35:16 and 08:36:21. HTML and RSC of all three pages were byte-identical in the warm phase and every round, including round 1; each round regenerated the pages (`STALE`, then a regenerated `HIT`).
+
+| Minute (UTC) | Event | Write units | Read units |
+| --- | --- | --- | --- |
+| 08:31 | Warm: first render of two non-prerendered paths | 18 | 3 |
+| 08:32 | r1: three pages revalidated, output unchanged | 14 | 2 |
+| 08:33–08:36 | r2–r5: three pages each, output unchanged | 0 | reads only |
+| Total | | 32 | 41 |
+
+On Vercel, non-prerendered catch-all paths are cached like ISR pages after their first request, including RSC. Unchanged regenerations cost no write units, except the first revalidation after the first render or build, which wrote 14 units although its output was identical. The earlier `use cache` runs also wrote only in round 1; that was previously attributed to the first runtime render differing from the prerender, but this run shows a first-revalidation write without any byte change.
+
 Run the check with tag targets:
 
 ```sh
