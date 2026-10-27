@@ -12,6 +12,19 @@ pnpm ondemand https://next-isr-repro.vercel.app 5 60 tag:demo,tag:product
 
 Local `next start` check: after `revalidateTag` the next request is `STALE` and the one after is a regenerated `HIT`; the first regeneration differs from the build prerender, later ones are byte-identical. Cached RSC is still sent without an ETag.
 
+### Vercel result: Cache Components with tag revalidation (16.2.9)
+
+Deployment `dpl_7JAnCCxo3JH5trxuWxo6f3LshbCS` to `next-isr-repro` production; `pnpm ondemand https://next-isr-repro.vercel.app 5 60 tag:demo,tag:product`. Revalidations (UTC, 2026-10-27) at 07:53:33, 07:54:36, 07:55:39, 07:56:42 and 07:57:45. Round 1 changed output (the first runtime render differs from the build prerender: HTML 4509 → 4514 bytes, RSC 3015 → 3020 bytes); rounds 2–5 regenerated the page each time (`STALE`, then a regenerated response) and were byte-identical to round 1. HTML and RSC carry no ETag.
+
+| Round | Output | Write units |
+| --- | --- | --- |
+| r1 | Changed | 14 |
+| r2–r4 | Identical | 0 (read units only) |
+| r5 | Identical | 0 in the chart window read, which ended in that minute |
+| Total | | 14 |
+
+On Next.js 16.2.9 without dependency patches or `partialPrefetching`, Cache Components with `use cache` and `revalidateTag(tag, 'max')` therefore incurs no write units for unchanged regenerations, matching the canary result. Compared with `bugfix/repro-ondemand-app` (about 12 write units per unchanged round), this still changes Cache Components, `use cache` and the revalidation trigger at once. Single run.
+
 ### Vercel result: Cache Components with tag revalidation (16.5.0-canary.26)
 
 Deployment `dpl_7NeiXU4AmZUnmaneekN4omb8wtZc` to `next-isr-repro` production; `pnpm ondemand https://next-isr-repro.vercel.app 5 60 tag:demo,tag:product`. Revalidations (UTC, 2026-10-27) at 07:36:47, 07:37:50, 07:38:53, 07:39:56 and 07:40:59. Round 1 changed output (the first runtime render differs from the build prerender: HTML 4996 → 5007 bytes, RSC 2956 → 2967 bytes); rounds 2–5 regenerated the page each time and were byte-identical to round 1.
