@@ -27,6 +27,8 @@ Deployment `dpl_6NB9Wkp6C4rcqvgjJ1peWmppTHpD` to `next-isr-repro` production; `p
 
 On Vercel, non-prerendered catch-all paths are cached like ISR pages after their first request, including RSC. Unchanged regenerations cost no write units, except the first revalidation after the first render or build, which wrote 14 units although its output was identical. The earlier `use cache` runs also wrote only in round 1; that was previously attributed to the first runtime render differing from the prerender, but this run shows a first-revalidation write without any byte change.
 
+A second run against the same deployment (warm 08:39 UTC, revalidations at 08:40:40, 08:41:44 and 08:42:49; same three pages, all already cached, output byte-identical to the first run) recorded 0 write units and 19 read units in total, including its round 1. The extra write therefore occurs once per page after the deployment or its first render, not at the start of every revalidation burst; after it, unchanged regenerations cost no write units.
+
 Run the check with tag targets:
 
 ```sh
