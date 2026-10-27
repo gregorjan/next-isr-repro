@@ -1,10 +1,12 @@
 import { createHash } from 'node:crypto'
 
-// Usage: bun run tools/ondemand.ts [base URL] [rounds] [interval seconds]
-// Warms the outputs, waits one interval, then revalidates `/` and the mock product API once per interval.
+// Usage: bun run tools/ondemand.ts [base URL] [rounds] [interval seconds] [targets]
+// Warms the outputs, waits one interval, then revalidates the targets once per interval.
+// Targets are comma-separated `path:<path>` or `tag:<tag>` entries; the default revalidates `/` and the mock product API.
 const base = (process.argv[2] || 'http://127.0.0.1:3199').replace(/\/$/, '')
 const rounds = Number(process.argv[3] || 5)
 const interval = Number(process.argv[4] || 60) * 1000
+const revalidations = (process.argv[5] || 'path:/,path:/api/mock/product').split(',').map((target) => target.split(':') as ['path' | 'tag', string])
 const targets = {
   html: { path: '/', headers: {} },
   rsc: { path: '/', headers: { RSC: '1' } },
@@ -39,14 +41,14 @@ const print = (label: string, s: Sample) => {
       `etag=${s.etag}`, `content-length=${s.length}`, `bytes=${s.bytes}`, `sha=${s.sha}`, same].join(' '),
   )
 }
-const revalidate = async (path: string) => {
-  const response = await fetch(`${base}/api/revalidate?path=${encodeURIComponent(path)}`, { method: 'POST' })
-  console.log(new Date().toISOString(), 'revalidate', path, response.status, await response.text())
-  if (!response.ok) throw Error(`Revalidate ${path} failed`)
+const revalidate = async ([kind, value]: ['path' | 'tag', string]) => {
+  const response = await fetch(`${base}/api/revalidate?${kind}=${encodeURIComponent(value)}`, { method: 'POST' })
+  console.log(new Date().toISOString(), 'revalidate', `${kind}:${value}`, response.status, await response.text())
+  if (!response.ok) throw Error(`Revalidate ${kind}:${value} failed`)
 }
 const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms))
 
-console.log(`base=${base} rounds=${rounds} interval=${interval / 1000}s`)
+console.log(`base=${base} rounds=${rounds} interval=${interval / 1000}s targets=${revalidations.map((t) => t.join(':')).join(',')}`)
 for (const name of Object.keys(targets) as Name[]) {
   for (let i = 0; i < 2; i++) {
     const s = await sample(name)
@@ -60,8 +62,7 @@ for (let round = 1; round <= rounds; round++) {
   console.log(`-- cooldown ${interval / 1000}s`)
   await sleep(interval)
   for (const name of Object.keys(targets) as Name[]) print(`r${round} before`, await sample(name))
-  await revalidate('/')
-  await revalidate('/api/mock/product')
+  for (const target of revalidations) await revalidate(target)
   for (const label of ['after', 'after2']) {
     for (const name of Object.keys(targets) as Name[]) {
       const s = await sample(name)

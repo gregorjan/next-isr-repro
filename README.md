@@ -1,8 +1,16 @@
 # Minimal Next.js ISR reproduction
 
-Stock Next.js 16.5.0-canary.26, React 19.2.3 and Node.js 22.23.2. No dependency patches, CMS, middleware, fonts, styling, authentication or application libraries.
+Stock Next.js 16.5.0-canary.26 with Cache Components, React 19.2.3 and Node.js 22.23.2. No dependency patches, CMS, middleware, fonts, styling, authentication or application libraries.
 
-This on-demand control matches GROHE production: `revalidate = false` and regeneration only through `revalidatePath`, the call GROHE's `/api/revalidate` uses for paths. This canary variant of `bugfix/repro-ondemand-app` changes only Next.js and its lockfile (taken from `bugfix/repro-canary-app`). The 16.2.9 on-demand branch changes only the revalidation trigger from `bugfix/isr-repro`; content, default ETags (`generateEtags: true`, no `next.config`) and versions are unchanged. The recorded tables below were measured with two-second time-based ISR, not with this branch.
+This branch tests Vercel's recommended model on top of `bugfix/repro-canary-ondemand-app`: `cacheComponents: true` and `partialPrefetching: true` (the setting canary recommends for new Cache Components apps). The page renders a `Demo` component with `'use cache'`, `cacheLife('max')` and `cacheTag('demo')`; the mock APIs cache their JSON the same way with the `product` and `navigation` tags. Route segment configs are removed because Cache Components rejects them. Revalidation uses `POST /api/revalidate?tag=<tag>`, which calls `revalidateTag(tag, 'max')` (stale-while-revalidate); `?path=` still calls `revalidatePath`. Content and default ETags are unchanged.
+
+Run the check with tag targets:
+
+```sh
+pnpm ondemand https://next-isr-repro.vercel.app 5 60 tag:demo,tag:product
+```
+
+Local `next start` check: after `revalidateTag` the next request is `STALE` and the one after is a regenerated `HIT`; the first regeneration differs from the build prerender, later ones are byte-identical. Cached RSC is still sent without an ETag.
 
 ## Baseline
 
