@@ -46,9 +46,9 @@ Both branches use `revalidate = false`, default ETags and `pnpm ondemand https:/
 
 Rounds (UTC, 2026-10-26): 16.2.9 at 13:50:42, 13:51:46, 13:52:50, 13:53:54 and 13:54:58; canary at 14:37:16, 14:38:20, 14:39:24, 14:40:28 and 14:41:32. In rounds 2–5 the HTML and RSC SHA-256 and the HTML ETag were identical to round 1 every time.
 
-On both versions, after every unchanged revalidation, the HTML response carried an ETag and kept its `Age` (about 63 seconds), while the RSC response had no ETag and its `Age` reset to 0. The mock API's `REVALIDATED` response had no ETag either; its `HIT` responses did. The ISR overview reported 0 time-based and 0 tag revalidations for these `revalidatePath` runs.
+On both versions the HTML responses carried an ETag and the RSC responses never did. The mock API's `REVALIDATED` response had no ETag; its `HIT` responses did. The first `REVALIDATED` HTML response still reported the previous object's `Age` (about 63 seconds) while RSC reported 0, but one second later both HTML and RSC were `HIT` with `Age: 1`, so both cached objects were replaced every round. `Age` therefore does not show which stored outputs were rewritten. An earlier version of this section read the HTML `Age` as the entry being kept; that reading was wrong. The ISR overview reported 0 time-based and 0 tag revalidations for these `revalidatePath` runs.
 
-On-demand revalidation does not avoid the writes: unchanged output still costs about 12 write units per round on 16.2.9 and 8 on canary. This matches the ratio of the time-based App Router results (+6 and +4). The header pattern is consistent with the cached RSC being rewritten, but the Usage chart does not split write units by output, so it does not prove which outputs are charged.
+On-demand revalidation does not avoid the writes: unchanged output still costs about 12 write units per round on 16.2.9 and 8 on canary. This matches the ratio of the time-based App Router results (+6 and +4). The Usage chart does not split write units by output, so these runs do not show which outputs are charged.
 
 ## Run
 
